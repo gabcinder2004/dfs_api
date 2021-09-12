@@ -1,6 +1,6 @@
 var cors = require("cors");
 const express = require("express");
-const constants = require("constants");
+const constants = require("./constants");
 
 var app = express();
 app.use(cors());
@@ -10,8 +10,9 @@ const port = process.env.PORT || 3001;
 
 app.get("/getTeams", async (req, res) => {
   try {
-    let response = await axios.get(
-      `https://dfyql-ro.sports.yahoo.com/v2/contestEntries?lang=en-US&region=US&device=desktop&sort=rank&contestId=${constants.YAHOO_CONTEST_ID}&start=0&limit=20`,
+    let url = `https://dfyql-ro.sports.yahoo.com/v2/contestEntries?lang=en-US&region=US&device=desktop&sort=rank&contestId=${constants.YAHOO_CONTEST_ID}&start=0&limit=20`
+    let response = await axios.get(url
+      ,
       {
         headers: {
           "Access-Control-Allow-Origin": "*",
@@ -47,15 +48,15 @@ app.get("/getTeams", async (req, res) => {
 
 app.get("/getLineupForTeam", async (req, res) => {
     try {
-      let response = await axios.get(
-        `https://dfyql-ro.sports.yahoo.com/v2/contestEntry/${req.query.id}`,
+      const url = `https://dfyql-ro.sports.yahoo.com/v2/contestEntry/${req.query.id}`;
+
+      let response = await axios.get(url
+        ,
         {
           headers: {
             "Access-Control-Allow-Origin": "*",
             "Access-Control-Allow-Headers":
-              "Origin, X-Requested-With, Content-Type, Accept",
-            "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoyNSwiaWF0IjoxNjIwMzUzNzgzLCJleHAiOjE2MjAzNjQ1ODMsInN1YiI6ImdhYiJ9.wd3FFje8CYxrCp00vELgGRRNBJNRWhKiKuDo5GWmcZo",
-          },
+              "Origin, X-Requested-With, Content-Type, Accept"          },
         }
       );
       if (response.status !== 200) {
