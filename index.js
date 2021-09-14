@@ -75,7 +75,9 @@ app.get("/getLineupForTeam", async (req, res) => {
             points: lineup?.player?.points ?? "",
             draftPercent: lineup?.player?.playerDraftPercent ?? "",
             image: lineup?.player?.largeImageUrl ?? "",
-            stats: lineup?.player?.stats
+            stats: lineup?.player?.stats,
+            gameStatusType: lineup?.player?.game?.statusType,
+            gameStatus: lineup?.player?.game?.status
           });
       });;
       res.status(200).send(players);
