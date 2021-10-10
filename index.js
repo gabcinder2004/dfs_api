@@ -8,6 +8,8 @@ app.use(cors());
 const axios = require("axios");
 const port = process.env.PORT || 3001;
 
+this.lastUpdate_players = [];
+
 app.get("/getTeams", async (req, res) => {
   try {
     let url = `https://dfyql-ro.sports.yahoo.com/v2/contestEntries?lang=en-US&region=US&device=desktop&sort=rank&contestId=${constants.YAHOO_CONTEST_ID}&start=0&limit=20`;
@@ -63,14 +65,26 @@ app.get("/getLineupForTeam", async (req, res) => {
     var players = [];
     response.data.entries.result[0].lineupSlotList.forEach((lineup) => {
       let projPts = lineup?.player?.projectedPoints ?? "";
+      let pointsScored = lineup?.player?.points ?? "";
       let adjustedProj = projPts;
+      let hadBigPlay = false;
+
+      if (pointsScored != "" && this.lastUpdate_players.length > 0) {
+        let lastUpdate_points = this.lastUpdate_players.find(
+          (x) => x.id == lineup.player.playerSalaryId
+        ).points;
+        let pointsDifference = pointsScored - lastUpdate_points;
+        if (pointsDifference >= 5) hadBigPlay = true;
+      }
+
       if (projPts != "") {
         let gameRemainingTime = lineup?.player?.game?.remainingTimeUnit;
         let projPtsPerMin = projPts / 60;
-        adjustedProj = (projPtsPerMin * gameRemainingTime) + lineup?.player?.points;
+        adjustedProj = projPtsPerMin * gameRemainingTime + pointsScored;
       }
 
       players.push({
+        id: lineup?.player?.playerSalaryId ?? "",
         position: lineup.lineupSlot.key,
         firstName: lineup?.player?.firstName ?? "",
         lastName: lineup?.player?.lastName ?? "",
@@ -83,9 +97,10 @@ app.get("/getLineupForTeam", async (req, res) => {
         stats: lineup?.player?.stats,
         gameStatusType: lineup?.player?.game?.statusType,
         gameStatus: lineup?.player?.game?.status,
-
+        hadBigPlay: hadBigPlay
       });
     });
+    this.lastUpdate_players = players;
     res.status(200).send(players);
   } catch (err) {
     res.status(500).send({ err: err.message, stack: err.stack });
