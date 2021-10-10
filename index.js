@@ -70,11 +70,14 @@ app.get("/getLineupForTeam", async (req, res) => {
       let hadBigPlay = false;
 
       if (pointsScored != "" && this.lastUpdate_players.length > 0) {
-        let lastUpdate_points = this.lastUpdate_players.find(
+        let lastUpdate_player = this.lastUpdate_players.find(
           (x) => x.id == lineup.player.playerSalaryId
-        ).points;
-        let pointsDifference = pointsScored - lastUpdate_points;
-        if (pointsDifference >= 5) hadBigPlay = true;
+        );
+        if(lastUpdate_player!= null){
+          let pointsDifference = pointsScored - lastUpdate_player.points;
+          if (pointsDifference >= 5) hadBigPlay = true;
+        }
+        
       }
 
       if (projPts != "") {
@@ -97,7 +100,7 @@ app.get("/getLineupForTeam", async (req, res) => {
         stats: lineup?.player?.stats,
         gameStatusType: lineup?.player?.game?.statusType,
         gameStatus: lineup?.player?.game?.status,
-        hadBigPlay: hadBigPlay
+        hadBigPlay: hadBigPlay,
       });
     });
     this.lastUpdate_players = players;
