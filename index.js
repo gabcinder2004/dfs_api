@@ -84,6 +84,7 @@ app.get("/getLineupForTeam", async (req, res) => {
             lastUpdate_player.bigPlayTimeRemaining;
           if (pointsDifference >= 5) {
             hadBigPlay = true;
+            bigPlayTimeRemaining = lastUpdate_player.bigPlayTimeRemaining;
           } else if (timeFromLastBigPlay <= 3) {
             hadBigPlay = true;
             bigPlayTimeRemaining = lastUpdate_player.bigPlayTimeRemaining;
