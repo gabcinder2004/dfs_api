@@ -68,16 +68,21 @@ app.get("/getLineupForTeam", async (req, res) => {
       let pointsScored = lineup?.player?.points ?? "";
       let adjustedProj = projPts;
       let hadBigPlay = false;
-
+      let bigPlayTimeRemaining = -1;
       if (pointsScored != "" && this.lastUpdate_players.length > 0) {
         let lastUpdate_player = this.lastUpdate_players.find(
           (x) => x.id == lineup.player.playerSalaryId
         );
-        if(lastUpdate_player!= null){
+        if (lastUpdate_player != null) {
           let pointsDifference = pointsScored - lastUpdate_player.points;
-          if (pointsDifference >= 5) hadBigPlay = true;
+          let timeFromLastBigPlay = lineup?.player?.game?.remainingTimeUnit - lastUpdate_player.bigPlayTimeRemaining;
+          if (pointsDifference >= 5) {
+            hadBigPlay = true;
+          } else if (timeFromLastBigPlay <= 3){
+            hadBigPlay = true;
+            bigPlayTimeRemaining = lastUpdate_player.bigPlayTimeRemaining;
+          }
         }
-        
       }
 
       if (projPts != "") {
@@ -101,6 +106,7 @@ app.get("/getLineupForTeam", async (req, res) => {
         gameStatusType: lineup?.player?.game?.statusType,
         gameStatus: lineup?.player?.game?.status,
         hadBigPlay: hadBigPlay,
+        bigPlayTime: bigPlayTimeRemaining,
       });
     });
     this.lastUpdate_players = players;
