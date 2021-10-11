@@ -8,7 +8,7 @@ app.use(cors());
 const axios = require("axios");
 const port = process.env.PORT || 3001;
 
-this.lastUpdate_players = [];
+this.lastUpdate_players = {};
 
 app.get("/getTeams", async (req, res) => {
   try {
@@ -69,25 +69,25 @@ app.get("/getLineupForTeam", async (req, res) => {
       let adjustedProj = projPts;
       let hadBigPlay = false;
       let bigPlayTimeRemaining = -1;
-      if (
-        pointsScored != "" &&
-        this.lastUpdate_players.length > 0 &&
-        lineup?.player?.game?.finished == false
-      ) {
-        let lastUpdate_player = this.lastUpdate_players.find(
-          (x) => x.id == lineup.player.playerSalaryId
-        );
-        if (lastUpdate_player != null) {
-          let pointsDifference = pointsScored - lastUpdate_player.points;
-          let timeFromLastBigPlay =
-            lineup?.player?.game?.remainingTimeUnit -
-            lastUpdate_player.bigPlayTimeRemaining;
-          if (pointsDifference >= 4) {
-            hadBigPlay = true;
-            bigPlayTimeRemaining = lastUpdate_player.bigPlayTimeRemaining;
-          } else if (timeFromLastBigPlay <= 3) {
-            hadBigPlay = true;
-            bigPlayTimeRemaining = lastUpdate_player.bigPlayTimeRemaining;
+
+      if (lineup?.player?.game?.finished == false) {
+        var test = 1;
+        if (pointsScored != "" && this.lastUpdate_players.length > 0) {
+          let lastUpdate_player = this.lastUpdate_players.find(
+            (x) => x.id == lineup.player.playerSalaryId
+          );
+          if (lastUpdate_player != null) {
+            let pointsDifference = pointsScored - lastUpdate_player.points;
+            let timeFromLastBigPlay =
+              lineup?.player?.game?.remainingTimeUnit -
+              lastUpdate_player.bigPlayTimeRemaining;
+            if (pointsDifference >= 4) {
+              hadBigPlay = true;
+              bigPlayTimeRemaining = lastUpdate_player.bigPlayTimeRemaining;
+            } else if (timeFromLastBigPlay <= 3) {
+              hadBigPlay = true;
+              bigPlayTimeRemaining = lastUpdate_player.bigPlayTimeRemaining;
+            }
           }
         }
       }
@@ -116,7 +116,7 @@ app.get("/getLineupForTeam", async (req, res) => {
         bigPlayTime: bigPlayTimeRemaining,
       });
     });
-    this.lastUpdate_players = players;
+    this.lastUpdate_players[req.query.id] = players;
     res.status(200).send(players);
   } catch (err) {
     res.status(500).send({ err: err.message, stack: err.stack });
