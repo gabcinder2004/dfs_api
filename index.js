@@ -69,16 +69,22 @@ app.get("/getLineupForTeam", async (req, res) => {
       let adjustedProj = projPts;
       let hadBigPlay = false;
       let bigPlayTimeRemaining = -1;
-      if (pointsScored != "" && this.lastUpdate_players.length > 0) {
+      if (
+        pointsScored != "" &&
+        this.lastUpdate_players.length > 0 &&
+        lineup?.player?.game?.finished == false
+      ) {
         let lastUpdate_player = this.lastUpdate_players.find(
           (x) => x.id == lineup.player.playerSalaryId
         );
         if (lastUpdate_player != null) {
           let pointsDifference = pointsScored - lastUpdate_player.points;
-          let timeFromLastBigPlay = lineup?.player?.game?.remainingTimeUnit - lastUpdate_player.bigPlayTimeRemaining;
+          let timeFromLastBigPlay =
+            lineup?.player?.game?.remainingTimeUnit -
+            lastUpdate_player.bigPlayTimeRemaining;
           if (pointsDifference >= 5) {
             hadBigPlay = true;
-          } else if (timeFromLastBigPlay <= 3){
+          } else if (timeFromLastBigPlay <= 3) {
             hadBigPlay = true;
             bigPlayTimeRemaining = lastUpdate_player.bigPlayTimeRemaining;
           }
