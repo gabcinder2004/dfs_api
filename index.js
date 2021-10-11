@@ -73,7 +73,7 @@ app.get("/getLineupForTeam", async (req, res) => {
       if (lineup?.player?.game?.finished == false) {
         var test = 1;
         if (pointsScored != "" && this.lastUpdate_players.length > 0) {
-          let lastUpdate_player = this.lastUpdate_players.find(
+          let lastUpdate_player = this.lastUpdate_players[req.query.id].find(
             (x) => x.id == lineup.player.playerSalaryId
           );
           if (lastUpdate_player != null) {
