@@ -10,17 +10,46 @@ const port = process.env.PORT || 3001;
 
 this.lastUpdate_players = {};
 
+let CACHE = {
+  teamsCache: { updated: -1, data: [] },
+  playersCache: { },
+}
+
+const isCacheExpired = (cacheUpdatedTime) => {
+  cacheDateDifference = parseInt((Date.now() - cacheUpdatedTime) / 1000);
+
+  console.log(cacheDateDifference);
+  if (cacheDateDifference < 1000) {
+    return false;
+  }
+  return true;
+}
+
+const doesCacheExist = (id, cache) => {
+  if (cache[id] == null || cache[id].updated == null){
+    return false;
+  }
+  return true;
+}
+
 app.get("/getTeams", async (req, res) => {
   try {
+    if (!isCacheExpired(CACHE.teamsCache.updated)) {
+      console.log("returning teams cache data");
+      res.status(200).send(CACHE.teamsCache.data);
+      return;
+    }
+
+    console.log("getting teams");
     let url = `https://dfyql-ro.sports.yahoo.com/v2/contestEntries?lang=en-US&region=US&device=desktop&sort=rank&contestId=${constants.YAHOO_CONTEST_ID}&start=0&limit=20`;
     let response = await axios.get(url, {
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Headers":
-          "Origin, X-Requested-With, Content-Type, Accept",
-        Authorization:
-          "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoyNSwiaWF0IjoxNjIwMzUzNzgzLCJleHAiOjE2MjAzNjQ1ODMsInN1YiI6ImdhYiJ9.wd3FFje8CYxrCp00vELgGRRNBJNRWhKiKuDo5GWmcZo",
-      },
+      // headers: {
+      //   "Access-Control-Allow-Origin": "*",
+      //   "Access-Control-Allow-Headers":
+      //     "Origin, X-Requested-With, Content-Type, Accept",
+      //   Authorization:
+      //     "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoyNSwiaWF0IjoxNjIwMzUzNzgzLCJleHAiOjE2MjAzNjQ1ODMsInN1YiI6ImdhYiJ9.wd3FFje8CYxrCp00vELgGRRNBJNRWhKiKuDo5GWmcZo",
+      // },
     });
     if (response.status !== 200) {
       throw `Status not 200. Status is ${response.status}`;
@@ -40,14 +69,23 @@ app.get("/getTeams", async (req, res) => {
         score: player.score,
       });
     });
+    CACHE.teamsCache = { updated: Date.now(), data: players };
     res.status(200).send(players);
   } catch (err) {
+    console.log(err);
     res.status(500).send({ err });
   }
 });
 
 app.get("/getLineupForTeam", async (req, res) => {
   try {
+    if (doesCacheExist(req.query.id, CACHE.playersCache) && !isCacheExpired(CACHE.playersCache[req.query.id].updated)) {
+      console.log("returning players cache data");
+      res.status(200).send(CACHE.playersCache[req.query.id].data);
+      return;
+    }
+
+
     const url = `https://dfyql-ro.sports.yahoo.com/v2/contestEntry/${req.query.id}`;
 
     let response = await axios.get(url, {
@@ -78,7 +116,7 @@ app.get("/getLineupForTeam", async (req, res) => {
           if (lastUpdate_player != null) {
             let pointsDifference = pointsScored - lastUpdate_player.points;
             let timeFromLastBigPlay =
-            lastUpdate_player.bigPlayTimeRemaining - lineup?.player?.game?.remainingTimeUnit;
+              lastUpdate_player.bigPlayTimeRemaining - lineup?.player?.game?.remainingTimeUnit;
             if (pointsDifference >= 4) {
               hadBigPlay = true;
               bigPlayTimeRemaining = lastUpdate_player.bigPlayTimeRemaining;
@@ -115,11 +153,16 @@ app.get("/getLineupForTeam", async (req, res) => {
       });
     });
     this.lastUpdate_players[req.query.id] = players;
+    CACHE.playersCache[req.query.id] = { updated: Date.now(), data: players };
+
     res.status(200).send(players);
   } catch (err) {
+    console.log(err);
     res.status(500).send({ err: err.message, stack: err.stack });
   }
 });
+
+
 
 app.listen(port, () => {
   console.log(`DFS Server listening on ${port}`);
