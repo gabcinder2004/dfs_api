@@ -1,4 +1,4 @@
 module.exports = {
     YAHOO_SERIES_ID: 11597,
-    YAHOO_CONTEST_ID: 10183173
+    YAHOO_CONTEST_ID: 11219805
 }
