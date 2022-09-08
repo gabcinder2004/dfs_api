@@ -30,6 +30,10 @@ const doesCacheExist = (id, cache) => {
   return true;
 }
 
+app.get("/getWeek", async (req, res) => {
+  res.send({week: constants.week});
+});
+
 app.get("/getTeams", async (req, res) => {
   try {
     if (!isCacheExpired(CACHE.teamsCache.updated)) {
