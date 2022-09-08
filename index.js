@@ -17,9 +17,7 @@ let CACHE = {
 
 const isCacheExpired = (cacheUpdatedTime) => {
   cacheDateDifference = parseInt((Date.now() - cacheUpdatedTime) / 1000);
-
-  console.log(cacheDateDifference);
-  if (cacheDateDifference < 1000) {
+  if (cacheDateDifference < 60) {
     return false;
   }
   return true;
@@ -35,13 +33,13 @@ const doesCacheExist = (id, cache) => {
 app.get("/getTeams", async (req, res) => {
   try {
     if (!isCacheExpired(CACHE.teamsCache.updated)) {
-      console.log("returning teams cache data");
+      console.log(`getTeams: CACHE RETURN`);
       res.status(200).send(CACHE.teamsCache.data);
       return;
     }
 
-    console.log("getting teams");
-    let url = `https://dfyql-ro.sports.yahoo.com/v2/contestEntries?lang=en-US&region=US&device=desktop&sort=rank&contestId=${constants.YAHOO_CONTEST_ID}&start=0&limit=20`;
+    console.log(`getTeams: NORMAL RETURN`);
+    let url = `https://dfyql-ro.sports.yahoo.com/v2/contestEntries?lang=en-US&region=US&device=desktop&sort=rank&contestId=${constants.YAHOO_CONTEST_ID}&start=0&limit=30`;
     let response = await axios.get(url, {
       // headers: {
       //   "Access-Control-Allow-Origin": "*",
@@ -80,11 +78,12 @@ app.get("/getTeams", async (req, res) => {
 app.get("/getLineupForTeam", async (req, res) => {
   try {
     if (doesCacheExist(req.query.id, CACHE.playersCache) && !isCacheExpired(CACHE.playersCache[req.query.id].updated)) {
-      console.log("returning players cache data");
+      console.log(`GETLINEUPFORTEAM: ${req.query.id} CACHE RETURN`);
       res.status(200).send(CACHE.playersCache[req.query.id].data);
       return;
     }
 
+    console.log(`GETLINEUPFORTEAM: ${req.query.id} NORMAL RETURN`);
 
     const url = `https://dfyql-ro.sports.yahoo.com/v2/contestEntry/${req.query.id}`;
 
