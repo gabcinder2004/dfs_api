@@ -17,7 +17,7 @@ let CACHE = {
 
 const isCacheExpired = (cacheUpdatedTime) => {
   cacheDateDifference = parseInt((Date.now() - cacheUpdatedTime) / 1000);
-  if (cacheDateDifference < 60) {
+  if (cacheDateDifference < 30) {
     return false;
   }
   return true;
