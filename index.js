@@ -39,6 +39,7 @@ app.get("/getTeams", async (req, res) => {
     if (!isCacheExpired(CACHE.teamsCache.updated)) {
       console.log(`getTeams: CACHE RETURN`);
       res.status(200).send(CACHE.teamsCache.data);
+      
       return;
     }
 
@@ -83,7 +84,7 @@ app.get("/getLineupForTeam", async (req, res) => {
   try {
     if (doesCacheExist(req.query.id, CACHE.playersCache) && !isCacheExpired(CACHE.playersCache[req.query.id].updated)) {
       console.log(`GETLINEUPFORTEAM: ${req.query.id} CACHE RETURN`);
-      res.status(200).send(CACHE.playersCache[req.query.id].data);
+      res.status(200).send({players: CACHE.playersCache[req.query.id].data, stats: CACHE.playersCache[req.query.id].stats});
       return;
     }
 
@@ -104,9 +105,12 @@ app.get("/getLineupForTeam", async (req, res) => {
     }
 
     var players = [];
+    var totalSalarySpent = 0;
+    var totalPointsMade = 0;
     response.data.entries.result[0].lineupSlotList.forEach((lineup) => {
       let projPts = lineup?.player?.projectedPoints ?? "";
       let pointsScored = lineup?.player?.points ?? "";
+      totalSalarySpent += lineup?.player?.salary ?? 0;
       let adjustedProj = projPts;
       let hadBigPlay = false;
       let bigPlayTimeRemaining = -1;
@@ -135,6 +139,7 @@ app.get("/getLineupForTeam", async (req, res) => {
         let gameRemainingTime = lineup?.player?.game?.remainingTimeUnit;
         let projPtsPerMin = projPts / 60;
         adjustedProj = projPtsPerMin * gameRemainingTime + pointsScored;
+        totalPointsMade += adjustedProj;
       }
 
       players.push({
@@ -156,9 +161,11 @@ app.get("/getLineupForTeam", async (req, res) => {
       });
     });
     this.lastUpdate_players[req.query.id] = players;
-    CACHE.playersCache[req.query.id] = { updated: Date.now(), data: players };
 
-    res.status(200).send(players);
+    lineupStats = {totalPointsMade, totalSalarySpent, projectedPoints: totalSalarySpent > 194 ? totalPointsMade : totalPointsMade + ((200 - totalSalarySpent) * 0.75)}
+    CACHE.playersCache[req.query.id] = { updated: Date.now(), data: players,  stats:lineupStats };
+
+    res.status(200).send({players, stats: lineupStats});
   } catch (err) {
     console.log(err);
     res.status(500).send({ err: err.message, stack: err.stack });
