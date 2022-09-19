@@ -80,6 +80,12 @@ app.get("/getTeams", async (req, res) => {
   }
 });
 
+/*
+https://dfyql-ro.sports.yahoo.com/v2/groups/87899?lang=en-US&region=US&device=desktop - DETERMINE DYNAMIC WEEK
+https://dfyql-ro.sports.yahoo.com/v2/groupsEntries/87899?lang=en-US&region=US&device=desktop&start=0&limit=30 - GET PLAYER IDS TO SEARCH SEASON HISTORY
+*/
+
+
 app.get("/getLineupForTeam", async (req, res) => {
   try {
     if (doesCacheExist(req.query.id, CACHE.playersCache) && !isCacheExpired(CACHE.playersCache[req.query.id].updated)) {
