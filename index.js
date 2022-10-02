@@ -168,7 +168,7 @@ app.get("/getLineupForTeam", async (req, res) => {
     });
     this.lastUpdate_players[req.query.id] = players;
 
-    lineupStats = {totalPointsMade, totalSalarySpent, projectedPoints: totalSalarySpent > 194 ? totalPointsMade : totalPointsMade + ((200 - totalSalarySpent) * 0.75)}
+    lineupStats = {totalPointsMade, totalSalarySpent, projectedPoints: totalSalarySpent > 194 ? totalPointsMade : totalPointsMade + ((200 - totalSalarySpent) * 0.60)}
     CACHE.playersCache[req.query.id] = { updated: Date.now(), data: players,  stats:lineupStats };
 
     res.status(200).send({players, stats: lineupStats});
