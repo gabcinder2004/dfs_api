@@ -1,5 +1,5 @@
 module.exports = {
-    YAHOO_CONTEST_ID: 11640856,
+    YAHOO_CONTEST_ID: 11689185,
     week: 6,
     year: 2022,
 }
