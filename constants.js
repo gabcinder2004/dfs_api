@@ -1,9 +1,5 @@
 module.exports = {
-<<<<<<< HEAD
     YAHOO_CONTEST_ID: 11727501,
-=======
-    YAHOO_CONTEST_ID: 11689185,
->>>>>>> 508833665a0f72a0f7cfc10f0bbe2c05f57d26cb
     week: 6,
     year: 2022,
 }
